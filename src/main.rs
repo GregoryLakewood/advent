@@ -1,9 +1,9 @@
-use std::fs::File;
-use std::io::{self, BufRead};
+use std::fs::{File};
+use std::io::{self, BufRead, Write};
 use std::path::Path;
 
 fn main() {
-    let mut output: u64 = 0;
+    let mut output = vec![0, 0, 0_u64];
     let mut counter: u64 = 0;
     // File hosts must exist in current path before this produces output
     if let Ok(lines) = read_lines("./input.txt") {
@@ -11,8 +11,12 @@ fn main() {
         for line in lines {
             if let Ok(ip) = line {
                 if ip.is_empty() {
-                    if counter > output {
-                        output = counter;
+                    for value in output.iter().enumerate() {
+                        if counter > *value.1 {
+                            output.insert(value.0, counter);
+                            output.pop();
+                            break;
+                        }
                     }
                     counter = 0;
                     continue;
@@ -22,7 +26,12 @@ fn main() {
                 println!("someting went bad: {:?}", line);
             }
         }
-        println!("{}", output);
+        println!("{:?}", output);
+        println!("{}", output.iter().sum::<u64>());
+        if let Ok(mut file) = File::create("output.txt") {
+            file.write(output.iter().sum::<u64>().to_string().as_bytes())
+                .unwrap();
+        }
     }
 }
 
