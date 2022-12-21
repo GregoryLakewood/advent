@@ -1,4 +1,5 @@
-use std::fs::{File};
+use core::panic;
+use std::fs::File;
 use std::io::{self, BufRead, Write};
 use std::path::Path;
 
@@ -9,28 +10,26 @@ fn main() {
         // Consumes the iterator, returns an (Optional) String
         for line in lines {
             if let Ok(ip) = line {
-                match ip.as_str() {
-                    "A X" => output += 3,
-                    "B X" => output += 1,
-                    "C X" => output += 2,
-                    "A Y" => output += 4,
-                    "B Y" => output += 5,
-                    "C Y" => output += 6,
-                    "A Z" => output += 8,
-                    "B Z" => output += 9,
-                    "C Z" => output += 7,
-                    "" => break,
-                    _ => panic!(),
+                let (left, right) = ip.split_at(ip.len() / 2);
+                for letter in left.chars() {
+                    if right.contains(letter) {
+                        let mut buffer: [u8; 1] = [0; 1];
+                        letter.encode_utf8(&mut buffer);
+                        match buffer[0] as u64 {
+                            65..=90 => output = output + buffer[0] as u64 - 38,
+                            97..=122 => output = output + buffer[0] as u64 - 96,
+                            _ => panic!(),
+                        }
+                        break;
+                    }
                 }
-
             } else {
                 println!("someting went bad: {:?}", line);
             }
         }
         println!("{:?}", output);
         if let Ok(mut file) = File::create("output.txt") {
-            file.write(output.to_string().as_bytes())
-                .unwrap();
+            file.write(output.to_string().as_bytes()).unwrap();
         }
     }
 }
