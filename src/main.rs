@@ -10,15 +10,15 @@ fn main() {
         for line in lines {
             if let Ok(ip) = line {
                 match ip.as_str() {
-                    "A X" => output += 4,
+                    "A X" => output += 3,
                     "B X" => output += 1,
-                    "C X" => output += 7,
-                    "A Y" => output += 8,
+                    "C X" => output += 2,
+                    "A Y" => output += 4,
                     "B Y" => output += 5,
-                    "C Y" => output += 2,
-                    "A Z" => output += 3,
+                    "C Y" => output += 6,
+                    "A Z" => output += 8,
                     "B Z" => output += 9,
-                    "C Z" => output += 6,
+                    "C Z" => output += 7,
                     "" => break,
                     _ => panic!(),
                 }
