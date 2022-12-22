@@ -1,30 +1,59 @@
 use core::panic;
 use std::fs::File;
+// use std::io::{self, BufRead, Write, BufReader};
+use itertools::Itertools;
 use std::io::{self, BufRead, Write};
 use std::path::Path;
+
+struct OutChars {
+    vector: Vec<char>,
+}
+
+impl OutChars {
+    fn delete_reoccuring(&mut self) -> Self {
+        let mut new_vec: Vec<char> = Vec::with_capacity(self.vector.len());
+        for element in &self.vector {
+            if new_vec.contains(element) {
+                continue;
+            } else {
+                new_vec.push(*element);
+            }
+        }
+        OutChars { vector: new_vec }
+    }
+}
 
 fn main() {
     let mut output = 0_u64;
     // File hosts must exist in current path before this produces output
     if let Ok(lines) = read_lines("./input.txt") {
         // Consumes the iterator, returns an (Optional) String
-        for line in lines {
-            if let Ok(ip) = line {
-                let (left, right) = ip.split_at(ip.len() / 2);
-                for letter in left.chars() {
-                    if right.contains(letter) {
-                        let mut buffer: [u8; 1] = [0; 1];
-                        letter.encode_utf8(&mut buffer);
-                        match buffer[0] as u64 {
-                            65..=90 => output = output + buffer[0] as u64 - 38,
-                            97..=122 => output = output + buffer[0] as u64 - 96,
-                            _ => panic!(),
-                        }
-                        break;
-                    }
+        for mut chunk in &lines.into_iter().chunks(3) {
+            let first = chunk.next().unwrap().unwrap();
+            let second = chunk.next().unwrap().unwrap();
+            let third = chunk.next().unwrap().unwrap();
+            let mut common_chars = vec![];
+            let mut out_char = OutChars {
+                vector: vec![],
+            };
+            for letter in first.chars() {
+                if second.contains(letter) {
+                    common_chars.push(letter);
                 }
-            } else {
-                println!("someting went bad: {:?}", line);
+            }
+            for letter in common_chars {
+                if third.contains(letter) {
+                    out_char.vector.push(letter);
+                }
+            }
+            out_char = out_char.delete_reoccuring();
+            if out_char.vector.len() != 1 {
+                panic!();
+            }
+            match out_char.vector[0] as u64 {
+                65..=90 => output = output + out_char.vector[0] as u64 - 38,
+                97..=122 => output = output + out_char.vector[0] as u64 - 96,
+                _ => panic!(),
             }
         }
         println!("{:?}", output);
